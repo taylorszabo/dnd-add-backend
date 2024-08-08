@@ -14,7 +14,6 @@ return new class extends Migration {
             $table->string('size');
             $table->string('type');
             $table->integer('cr');
-            $table->string('environment');
             $table->string('source_book');
             $table->boolean('is_legendary');
             $table->integer('xp_amount');

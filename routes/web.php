@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MonsterController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -17,6 +18,10 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('api/monsters', [MonsterController::class, 'getAllMonsters']);
+Route::get('api/monsters/{id}', [MonsterController::class, 'getMonster']);
+Route::get('monsters/{id}', [MonsterController::class, 'show'])->name('monsters.show');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
