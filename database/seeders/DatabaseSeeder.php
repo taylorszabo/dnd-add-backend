@@ -13,45 +13,46 @@ class DatabaseSeeder extends Seeder
 {
     public function run()
     {
-        // Fetch the list of all monsters
-        $monsterListResponse = Http::get("https://www.dnd5eapi.co/api/monsters");
+        $response = Http::get('https://api.open5e.com/v1/monsters/');
+        $monsters = $response->json();
 
-        if ($monsterListResponse->ok()) {
-            $monsterList = $monsterListResponse->json()['results'];
-
-            foreach ($monsterList as $monster) {
-                // Fetch detailed data for each monster
-                $monsterDetailResponse = Http::get("https://www.dnd5eapi.co{$monster['url']}");
-
-                if ($monsterDetailResponse->ok()) {
-                    $data = $monsterDetailResponse->json();
-
-                    // Calculate initiative modifier from Dexterity
-                    $dexterity = $data['dexterity'];
-                    $initiative_modifier = floor(($dexterity - 10) / 2);
-
-                    // Insert monster data into the database
-                    DB::table('monsters')->insert([
-                        'name' => $data['name'],
-                        'alignment' => $data['alignment'] ?? null,
-                        'size' => $data['size'],
-                        'type' => $data['type'],
-                        'cr' => $data['challenge_rating'],
-                        'source_book' => 'Monster Manual',
-                        'is_legendary' => isset($data['legendary_actions']),
-                        'xp_amount' => $data['xp'],
-                        'hit_points' => $data['hit_points'],
-                        'initiative_modifier' => $initiative_modifier,
-                        'is_dead' => false,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                } else {
-                    $this->command->error("Failed to fetch data for {$monster['name']}");
-                }
-            }
-        } else {
-            $this->command->error("Failed to fetch the monster list.");
+        foreach ($monsters['results'] as $monster) {
+            $monsterDetail = Http::get("https://api.open5e.com/v1/monsters/{$monster['slug']}")->json();
+            DB::table('monsters')->insert([
+                'name' => $monsterDetail['name'],
+                'alignment' => $monsterDetail['alignment'],
+                'size' => $monsterDetail['size'],
+                'type' => $monsterDetail['type'],
+                'cr' => $monsterDetail['cr'],
+                'source_book' => $monsterDetail['document__title'],
+                'is_legendary' => !empty($monsterDetail['legendary_actions']),
+                'xp_amount' => $this->calculateXP($monsterDetail['cr']),
+                'hit_points' => $monsterDetail['hit_points'],
+                'initiative_modifier' => $this->calculateInitiative($monsterDetail['dexterity']),
+                'is_dead' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
         }
+    }
+
+    private function calculateXP($cr): int
+    {
+        $xpTable = [
+            0 => 10, 0.125 => 25, 0.25 => 50, 0.5 => 100, 1 => 200,
+            2 => 450, 3 => 700, 4 => 1100, 5 => 1800, 6 => 2300,
+            7 => 2900, 8 => 3900, 9 => 5000, 10 => 5900, 11 => 7200,
+            12 => 8400, 13 => 10000, 14 => 11500, 15 => 13000, 16 => 15000,
+            17 => 18000, 18 => 20000, 19 => 22000, 20 => 25000, 21 => 33000,
+            22 => 41000, 23 => 50000, 24 => 62000, 25 => 75000, 26 => 90000,
+            27 => 105000, 28 => 120000, 29 => 135000, 30 => 155000,
+        ];
+
+        return $xpTable[$cr] ?? 0;
+    }
+
+    private function calculateInitiative($dexterity): float
+    {
+        return floor(($dexterity - 10) / 2);
     }
 }
