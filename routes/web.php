@@ -22,6 +22,8 @@ Route::get('/dashboard', function () {
 Route::get('api/monsters', [MonsterController::class, 'getAllMonsters']);
 Route::get('api/monsters/{id}', [MonsterController::class, 'getMonster']);
 Route::get('monsters/{id}', [MonsterController::class, 'show'])->name('monsters.show');
+Route::post('/monsters/encounter', [MonsterController::class, 'addToEncounter']);
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

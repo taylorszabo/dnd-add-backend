@@ -4,6 +4,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\MonstersEncounters;
 use Illuminate\Http\Request;
 use App\Models\Monsters;
 use Inertia\Inertia;
@@ -47,6 +48,21 @@ class MonsterController extends Controller
                 'cr' => $monster->cr,
             ]
         ]);
+    }
+
+    public function addToEncounter(Request $request)
+    {
+        $validated = $request->validate([
+            'monster_id' => 'required|exists:monsters,id',
+            'encounter_id' => 'required|exists:encounters,id',
+        ]);
+
+        $monsterEncounter = MonstersEncounters::create([
+            'monster_id' => $validated['monster_id'],
+            'encounter_id' => $validated['encounter_id'],
+        ]);
+
+        return response()->json($monsterEncounter, 201);
     }
 }
 

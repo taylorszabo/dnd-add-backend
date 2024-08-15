@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Encounters extends Model
 {
@@ -11,4 +12,8 @@ class Encounters extends Model
 
     protected $guarded = [];
 
+    public function monsters(): BelongsToMany
+    {
+        return $this->belongsToMany(Monsters::class, 'monsters_encounters');
+    }
 }
