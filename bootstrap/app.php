@@ -14,7 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
-        ]);
+        ]
+        )->validateCsrfTokens(except: ['http://127.0.0.1:8000/api/monsters/encounter']);
+
 
         //
     })

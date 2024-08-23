@@ -53,8 +53,8 @@ class MonsterController extends Controller
     public function addToEncounter(Request $request)
     {
         $validated = $request->validate([
-            'monster_id' => 'required|exists:monsters,id',
-            'encounter_id' => 'required|exists:encounters,id',
+            'monster_id' => 'required',
+            'encounter_id' => 'required',
         ]);
 
         $monsterEncounter = MonstersEncounters::create([
